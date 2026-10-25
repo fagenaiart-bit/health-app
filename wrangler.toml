@@ -1,0 +1,10 @@
+name = "health-ai"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+ALLOWED_ORIGIN = "https://health.me20.studio"
+ALLOWED_EMAILS = "fa.genaiart@gmail.com"
+OPENAI_MODEL = "gpt-4.1-mini"
+# GOOGLE_CLIENT_ID задається тут або в панелі Cloudflare
+# OPENAI_API_KEY — тільки як секрет: npx wrangler secret put OPENAI_API_KEY
