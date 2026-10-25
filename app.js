@@ -79,14 +79,21 @@ function chart(series, { lo = null, hi = null, unit = "", h = 210 } = {}) {
     }
     s.points.forEach((p, i) => { const [x, y] = pts[i]; const last = i === pts.length - 1; const bad = (lo != null && p.y < lo) || (hi != null && p.y > hi);
       g += `<circle cx="${x}" cy="${y}" r="${last ? 5.5 : 4}" fill="${bad ? "#e0874a" : last ? (s.lastColor || s.color) : "#fff"}" stroke="${bad ? "#e0874a" : s.color}" stroke-width="2"/>`;
-      if (last) g += `<text x="${Math.min(x, W - P.r - 20)}" y="${y - 10}" text-anchor="middle" style="fill:#2b3a63;font-weight:700">${fmtNum(p.y)}</text>`; });
+      if (last) g += `<text x="${Math.min(x, W - P.r - 20)}" y="${y - 10}" text-anchor="middle" style="fill:#2b3a63;font-weight:600">${fmtNum(p.y)}</text>`; });
   }
   return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(unit)}"><defs><linearGradient id="gf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd6f7"/><stop offset="1" stop-color="#cfd6f7" stop-opacity="0"/></linearGradient></defs>${g}</svg>`;
 }
 
 // ——— шапка, навігація ———
+// Мови: українська й англійська — завжди; додаткові (польська тощо) вмикаються в налаштуваннях
+const BASE_LANGS = ["uk", "en"], EXTRA_LANGS = { pl: "Polski" }, LANG_NAMES = { uk: "Українська", en: "English", ...EXTRA_LANGS };
+function shownLangs() {
+  const extra = (store.data.profile.extraLangs || []).filter(l => EXTRA_LANGS[l]);
+  if (!BASE_LANGS.includes(lang()) && !extra.includes(lang())) extra.push(lang());
+  return [...BASE_LANGS, ...extra];
+}
 function langPills() {
-  return `<div class="langs">${["uk", "pl", "en"].map(l => `<button class="lang ${lang() === l ? "on" : ""}" data-lang="${l}"><span class="flag ${l === "uk" ? "ua" : l}"></span>${l === "uk" ? "UA" : l.toUpperCase()}</button>`).join("")}</div>`;
+  return `<div class="langs">${shownLangs().map(l => `<button class="lang ${lang() === l ? "on" : ""}" data-lang="${l}"><span class="flag ${l === "uk" ? "ua" : l}"></span>${l === "uk" ? "UA" : l.toUpperCase()}</button>`).join("")}</div>`;
 }
 function header() {
   return `<header class="top"><a class="brand" href="#" data-tab="overview"><span class="brand-heart">${I.heart}</span><span class="brand-name">health<i>.</i></span></a>
@@ -212,7 +219,7 @@ function pageWelcome() {
   <button class="gbtn" data-act="signin">${I.g} ${t("signIn")}</button>
   ${CONFIG.GOOGLE_CLIENT_ID ? "" : `<p class="small" style="text-align:center">${t("notConfigured")}</p>`}
   <p style="text-align:center"><button class="link" data-act="demo">${t("demo")}</button></p>
-  <p class="small" style="text-align:center;margin-top:30px">${t("privacyText")}</p></div>`;
+  <p class="small" style="text-align:center;margin-top:30px">${t("privacyText")} <a class="link" href="privacy.html" target="_blank">${t("privacy")} ↗</a></p></div>`;
 }
 function aiChoices(sel) {
   const opts = [["server", t("aiServer"), t("aiServerD")], ["chatgpt", t("aiGpt"), t("aiGptD")]]
@@ -240,6 +247,12 @@ function render() {
 store.on(render);
 
 // ——— повідомлення й шторки ———
+function ask(msg, yes = t("delete")) {
+  return new Promise(res => sheet(msg, `<div class="btns"><button class="btn danger" data-yes>${yes}</button><button class="btn ghost" data-no>${t("cancel")}</button></div>`, (el, close) => {
+    el.querySelector("[data-yes]").onclick = () => { close(); res(true); };
+    el.querySelector("[data-no]").onclick = () => { close(); res(false); };
+  }));
+}
 function toast(msg) { const d = document.createElement("div"); d.className = "toast"; d.textContent = msg; document.body.appendChild(d); setTimeout(() => d.remove(), 2600); }
 function sheet(title, body, onMount) {
   const bg = document.createElement("div"); bg.className = "sheet-bg";
@@ -253,16 +266,19 @@ const field = (id, label, val = "", type = "text", extra = "") => `<label class=
 const val = (root, id) => root.querySelector("#" + id)?.value.trim() ?? "";
 const delBtn = item => (item?.id ? `<button class="btn danger" data-del>${t("delete")}</button>` : "");
 
-function editForm({ title, col, item = {}, html, read, after }) {
-  sheet(title, `${html(item)}<div class="btns" style="margin-top:14px"><button class="btn" data-save>${t("save")}</button>${delBtn(item)}</div>`, (el, close) => {
-    el.querySelector("[data-save]").onclick = () => { const x = read(el); if (!x) return; store.upsert(col, { ...item, ...x }); close(); toast(t("added")); after?.(); };
-    el.querySelector("[data-del]")?.addEventListener("click", () => { if (confirm(t("confirmDelete"))) { store.remove(col, item.id); close(); toast(t("deleted")); } });
+function editForm({ title, col, item = {}, html, read, after, more }) {
+  sheet(title, `${html(item)}<div class="btns" style="margin-top:14px"><button class="btn" data-save>${t("save")}</button>${more && !item.id ? `<button class="btn ghost" data-more>${t("saveMore")}</button>` : ""}${delBtn(item)}</div>`, (el, close) => {
+    const go = again => { const x = read(el); if (!x) return; store.upsert(col, { ...item, ...x }); close(); toast(t("added")); if (again) more(x); else after?.(); };
+    el.querySelector("[data-save]").onclick = () => go(false);
+    el.querySelector("[data-more]")?.addEventListener("click", () => go(true));
+    el.querySelector("[data-del]")?.addEventListener("click", async () => { if (await ask(t("confirmDelete"))) { store.remove(col, item.id); close(); toast(t("deleted")); } });
   });
 }
 const forms = {
   lab(item = {}, key) {
-    const m = key && markers().find(x => x.key === key); if (m && !item.id) item = { code: m.code, name: m.name, unit: m.unit, refLow: m.refLow, refHigh: m.refHigh };
-    editForm({ title: t("addValue"), col: "labs", item, html: x => `${field("name", t("name"), x.name)}<div class="frow">${field("value", t("value"), x.value, "number", 'step="any" inputmode="decimal"')}${field("unit", t("unit"), x.unit)}</div><div class="frow">${field("refLow", t("refLow"), x.refLow ?? "", "number", 'step="any"')}${field("refHigh", t("refHigh"), x.refHigh ?? "", "number", 'step="any"')}</div><div class="frow">${field("date", t("date"), x.date || today(), "date")}${field("code", t("code"), x.code)}</div>`,
+    const m = key && markers().find(x => x.key === key); if (m && !item.id) item = { ...item, code: m.code, name: m.name, unit: m.unit, refLow: m.refLow, refHigh: m.refHigh };
+    const doc = item.docId && store.list("docs").find(d => d.id === item.docId);
+    editForm({ title: t("addValue") + (doc && !item.id ? ` · ${esc(doc.title)}` : ""), col: "labs", item, more: x => forms.lab({ date: x.date, docId: item.docId }), html: x => `${field("name", t("name"), x.name)}<div class="frow">${field("value", t("value"), x.value, "number", 'step="any" inputmode="decimal"')}${field("unit", t("unit"), x.unit)}</div><div class="frow">${field("refLow", t("refLow"), x.refLow ?? "", "number", 'step="any"')}${field("refHigh", t("refHigh"), x.refHigh ?? "", "number", 'step="any"')}</div><div class="frow">${field("date", t("date"), x.date || today(), "date")}${field("code", t("code"), x.code)}</div>`,
       read: el => { const v = num(val(el, "value")); if (!val(el, "name") || v == null) return null; return { name: val(el, "name"), value: v, unit: val(el, "unit"), refLow: num(val(el, "refLow")), refHigh: num(val(el, "refHigh")), date: val(el, "date"), code: val(el, "code").toUpperCase() }; } });
   },
   bp(item = {}) {
@@ -280,30 +296,43 @@ const forms = {
 const catSelect = c => `<label class="f"><span>${t("category")}</span><select class="in" id="category">${["lab", "visit", "exam", "other"].map(k => `<option value="${k}" ${c === k ? "selected" : ""}>${t("cat_" + k)}</option>`).join("")}</select></label>`;
 function addDoc(existing) {
   const mode = store.data.profile.aiMode, d = existing || {};
+  const aiBtn = existing ? (mode === "chatgpt" ? `<button class="btn ghost" data-gpt>${t("importGpt")}</button>` : "") : `<button class="btn" data-ai-read>${t("readAi")}</button>`;
   sheet(existing ? t("edit") : t("addDoc"), `
     ${existing ? "" : `<div class="drop"><input type="file" id="file" accept="application/pdf,image/*" class="in"><p class="small">${t("chooseFile")}</p></div>`}
     ${field("title", t("title"), d.title)}${catSelect(d.category || "lab")}<div class="frow">${field("date", t("date"), d.date || "", "date")}${field("clinic", t("clinic"), d.clinic)}</div>
     <div id="busy" class="small hidden"><span class="spin"></span> <span id="busyT"></span></div>
-    <div class="btns" style="margin-top:14px"><button class="btn" data-save>${t("save")}</button>
-    ${existing && mode === "chatgpt" ? `<button class="btn ghost" data-gpt>${t("importGpt")}</button>` : ""}${delBtn(existing)}</div>`, (el, close) => {
-    const busy = (txt) => { el.querySelector("#busy").classList.toggle("hidden", !txt); el.querySelector("#busyT").textContent = txt || ""; el.querySelector("[data-save]").disabled = !!txt; };
+    <div class="btns" style="margin-top:14px">${aiBtn}<button class="btn ${existing ? "" : "ghost"}" data-manual>${existing ? t("save") : t("manualEntry")}</button>
+    ${existing ? `<button class="btn ghost" data-values>${t("addValue")}</button>` : ""}${delBtn(existing)}</div>
+    ${existing ? "" : `<p class="small">${t("manualHint")}</p>`}`, (el, close) => {
+    const busy = txt => { el.querySelector("#busy").classList.toggle("hidden", !txt); el.querySelector("#busyT").textContent = txt || ""; el.querySelectorAll(".btns .btn").forEach(b => (b.disabled = !!txt)); };
+    const read = () => { const file = el.querySelector("#file")?.files?.[0]; return { file, doc: { ...d, title: val(el, "title") || file?.name?.replace(/\.[^.]+$/, "") || "", autoTitle: existing ? d.autoTitle : !val(el, "title"), category: val(el, "category"), date: val(el, "date"), clinic: val(el, "clinic") } }; };
+    const saveDoc = async () => {
+      const { file, doc } = read();
+      if (!existing && file && store.mode === "google") { busy(t("uploading")); const f = await drive.uploadFile(file); doc.driveFileId = f.id; doc.webViewLink = f.webViewLink; doc.mime = f.mimeType; }
+      return { file, saved: store.upsert("docs", doc) };
+    };
+    const fail = e => { console.error(e); busy(""); if (e.code === 401) { store.setStatus("auth"); toast(t("sessionExpired")); } else toast(t("syncError")); };
     el.querySelector("[data-gpt]")?.addEventListener("click", () => { close(); gptImport(existing); });
-    el.querySelector("[data-del]")?.addEventListener("click", () => { if (confirm(t("confirmDelete"))) { store.remove("docs", existing.id); close(); } });
-    el.querySelector("[data-save]").onclick = async () => {
-      const file = el.querySelector("#file")?.files?.[0];
-      const doc = { ...d, title: val(el, "title") || file?.name?.replace(/\.[^.]+$/, "") || "", autoTitle: !val(el, "title"), category: val(el, "category"), date: val(el, "date"), clinic: val(el, "clinic") };
-      if (existing) { store.upsert("docs", doc); close(); return; }
+    el.querySelector("[data-values]")?.addEventListener("click", () => { const { doc } = read(); const s = store.upsert("docs", doc); close(); forms.lab({ date: s.date || today(), docId: s.id }); });
+    el.querySelector("[data-del]")?.addEventListener("click", async () => { if (await ask(t("confirmDelete"))) { store.remove("docs", existing.id); close(); } });
+    // Вручну: зберегти документ (з файлом або без) і одразу вносити показники з потрібною датою
+    el.querySelector("[data-manual]").onclick = async () => {
+      if (!existing && !read().file && !val(el, "title")) { toast(t("needTitle")); return; }
+      try { const { saved } = await saveDoc(); close(); if (existing) toast(t("added")); else forms.lab({ date: saved.date || today(), docId: saved.id }); } catch (e) { fail(e); }
+    };
+    // AI: потрібен файл
+    el.querySelector("[data-ai-read]")?.addEventListener("click", async () => {
+      if (!read().file) { toast(t("needFile")); return; }
       try {
-        if (file && store.mode === "google") { busy(t("uploading")); const f = await drive.uploadFile(file); doc.driveFileId = f.id; doc.webViewLink = f.webViewLink; doc.mime = f.mimeType; }
-        const saved = store.upsert("docs", doc);
-        if (file && mode === "server" && store.mode === "google") {
+        const { file, saved } = await saveDoc();
+        if (mode === "server") {
+          if (store.mode !== "google") { close(); toast(t("serverError")); return; }
           busy(t("reading"));
           try { const res = await readWithServer(file, lang()); close(); review(res, saved); }
           catch (e) { close(); toast(e.code === 403 ? t("notAllowed") : t("serverError")); }
-        } else if (file && mode === "chatgpt") { close(); gptImport(saved); }
-        else { close(); toast(t("added")); }
-      } catch (e) { console.error(e); busy(""); if (e.code === 401) { store.setStatus("auth"); toast(t("sessionExpired")); } else toast(t("syncError")); }
-    };
+        } else { close(); gptImport(saved); }
+      } catch (e) { fail(e); }
+    });
   });
 }
 function gptImport(doc) {
@@ -349,17 +378,21 @@ function review(res, doc) {
 function settings() {
   const p = store.data.profile;
   sheet(t("settings"), `${field("sName", t("yourName"), p.name)}
-    <label class="f"><span>${t("language")}</span><select class="in" id="sLang">${[["uk", "Українська"], ["pl", "Polski"], ["en", "English"]].map(([k, n]) => `<option value="${k}" ${lang() === k ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <label class="f"><span>${t("language")}</span><select class="in" id="sLang">${Object.entries(LANG_NAMES).map(([k, n]) => `<option value="${k}" ${lang() === k ? "selected" : ""}>${n}</option>`).join("")}</select></label>
+    <p class="eyebrow" style="margin-top:16px">${t("extraLangs")}</p><p class="small">${t("extraHint")}</p>
+    ${Object.entries(EXTRA_LANGS).map(([k, n]) => `<label class="check"><input type="checkbox" data-extra="${k}" ${(p.extraLangs || []).includes(k) ? "checked" : ""}><span>${n}</span></label>`).join("")}
     <p class="eyebrow" style="margin-top:16px">${t("aiMode")}</p><div id="sAi">${aiChoices(p.aiMode)}</div>
     <div class="btns"><button class="btn" data-save>${t("save")}</button></div>
     <p class="eyebrow" style="margin-top:22px">${t("backup")}</p>
     <div class="btns"><button class="btn ghost small" data-export>${t("exportBtn")}</button><label class="btn ghost small">${t("importBackup")}<input type="file" accept="application/json" id="imp" hidden></label></div>
-    <p class="eyebrow" style="margin-top:22px">${t("privacy")}</p><p class="small">${t("privacyText")}</p>
+    <p class="eyebrow" style="margin-top:22px">${t("privacy")}</p><p class="small">${t("privacyText")} <a class="link" href="privacy.html" target="_blank">${t("privacy")} ↗</a></p>
     ${store.user?.email ? `<p class="small">${esc(store.user.email)}</p>` : ""}
     <div class="btns" style="margin-top:12px"><button class="btn danger" data-out>${t("signOut")}</button></div>`, (el, close) => {
     let mode = p.aiMode;
     el.querySelector("#sAi").addEventListener("click", e => { const b = e.target.closest("[data-ai]"); if (!b) return; mode = b.dataset.ai; el.querySelectorAll("[data-ai]").forEach(x => x.classList.toggle("on", x === b)); });
-    el.querySelector("[data-save]").onclick = () => { if (mode === "server" && p.aiMode !== "server" && !confirm(t("aiServerD"))) return; const l = val(el, "sLang"); localStorage.setItem("health.lang", l); store.setProfile({ name: val(el, "sName") || p.name, lang: l, aiMode: mode, consent: mode === "server" ? true : p.consent }); close(); };
+    el.querySelector("[data-save]").onclick = async () => { if (mode === "server" && p.aiMode !== "server" && !(await ask(t("aiServerD"), t("save")))) return; const l = val(el, "sLang"); localStorage.setItem("health.lang", l);
+      const extraLangs = [...el.querySelectorAll("[data-extra]:checked")].map(c => c.dataset.extra); if (EXTRA_LANGS[l] && !extraLangs.includes(l)) extraLangs.push(l);
+      store.setProfile({ name: val(el, "sName") || p.name, lang: l, extraLangs, aiMode: mode, consent: mode === "server" ? true : p.consent }); close(); };
     el.querySelector("[data-export]").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(store.data, null, 2)], { type: "application/json" })); a.download = `health-backup-${today()}.json`; a.click(); };
     el.querySelector("#imp").onchange = async e => { try { const d = JSON.parse(await e.target.files[0].text()); store.data = merge(store.data, d); store.changed(); close(); toast(t("added")); } catch { toast(t("badJson")); } };
     el.querySelector("[data-out]").onclick = () => { if (store.mode === "google") googleSignOut(); else localStorage.removeItem("health.mode"); store.mode = null; store.data = emptyData(); close(); render(); };
