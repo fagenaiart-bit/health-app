@@ -111,6 +111,7 @@ export async function googleSignIn({ silent = false } = {}) {
   await loadGis();
   tokenClient ||= google.accounts.oauth2.initTokenClient({
     client_id: CONFIG.GOOGLE_CLIENT_ID, scope: SCOPE,
+    include_granted_scopes: false, // не підтягувати дозволи інших застосунків цього проєкту (напр. YouTube)
     callback: r => { if (r.error) pending?.rej(r); else pending?.res(r); },
     error_callback: e => pending?.rej(e)
   });
