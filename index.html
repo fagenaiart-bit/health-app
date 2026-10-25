@@ -6,18 +6,26 @@
 <title>health. — твої медичні дані в одному місці</title>
 <meta name="description" content="Аналізи, візити, ліки, тиск і вага з різних клінік в одному місці. Дані зберігаються тільки на твоєму Google Drive.">
 <meta name="theme-color" content="#eef0fb">
-<meta name="robots" content="noindex">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="health.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<main id="app" class="app"></main>
+<main id="app" class="app">
+  <!-- Статичний опис для Google та пошукових систем. Замінюється застосунком після завантаження. -->
+  <div class="welcome">
+    <h1>health. — твої медичні дані в одному місці</h1>
+    <p class="lead">health. — вебзастосунок, де аналізи, візити до лікарів, ліки, тиск і вага з різних клінік зібрані в одному місці. Українською, англійською та польською.</p>
+    <p class="lead">Для чого вхід через Google: застосунок зберігає твої дані в папці «health.» на твоєму власному Google Drive (дозвіл drive.file — лише файли, створені застосунком). Розробник не має доступу до твоїх даних.</p>
+    <p class="lead" lang="en">health. is a web app that keeps lab results, doctor visits, medicines, blood pressure and weight from different clinics in one place. Google sign-in is used only to store your data in a «health.» folder on your own Google Drive (drive.file scope — only files the app creates). The developer has no access to your data.</p>
+    <p><a href="privacy.html">Політика приватності / Privacy policy</a> · me20 Studio, Warszawa</p>
+  </div>
+</main>
 <script type="module" src="app.js"></script>
 </body>
 </html>
