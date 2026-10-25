@@ -1,6 +1,8 @@
 // Тексти інтерфейсу: українська, польська, англійська
 export const STR = {
   uk: {
+    extraLangs: "Додаткові мови", extraHint: "Українська й англійська є завжди. Додаткова мова з'явиться вгорі поруч з ними.",
+    readAi: "Прочитати через AI", manualEntry: "Внести вручну", saveMore: "Зберегти й додати ще", manualHint: "Старі чи рукописні аналізи — «Внести вручну»: файл чи фото необов'язкові, дату вказуєш сам(а).", needFile: "Щоб AI прочитав документ, додай файл або фото.", needTitle: "Додай файл або назву документа.",
     tagline: "Усе в одному місці.",
     welcomeTitle: "Твої медичні дані — в одному місці.",
     welcomeLead: "Аналізи, візити, ліки й щоденні показники з різних клінік. Усе зберігається тільки на твоєму Google Drive.",
@@ -39,7 +41,7 @@ export const STR = {
     openGpt: "Відкрити GPT", paste: "Встав відповідь ChatGPT сюди", importBtn: "Розпізнати", badJson: "Не вдалося прочитати відповідь. Скопіюй її повністю, разом з { }.",
     importGpt: "Імпорт з ChatGPT", skipAi: "Тільки зберегти файл",
     settings: "Налаштування", language: "Мова", aiMode: "Хто читає аналізи", backup: "Резервна копія", exportBtn: "Завантажити копію (.json)", importBackup: "Відновити з копії",
-    signOut: "Вийти", privacy: "Приватність", privacyText: "Усі дані зберігаються в папці «health.» на твоєму Google Drive. Застосунок бачить лише файли, які створив сам. Розробник не має доступу до твоїх даних.",
+    signOut: "Вийти", privacy: "Приватність", privacyText: "Усі дані зберігаються в папці «health. · твоє ім'я» на твоєму Google Drive. Застосунок бачить лише файли, які створив сам. Розробник не має доступу до твоїх даних.",
     saved: "Збережено на Google Drive", savedLocal: "Збережено в браузері", saving: "Зберігаю…", syncError: "Не вдалося зберегти. Спробую ще раз.", offline: "Немає інтернету — збережу пізніше",
     footer: "Дані з документів · без автоматичних медичних висновків", added: "Додано", deleted: "Видалено", confirmDelete: "Точно видалити?",
     reconnect: "Увійти знову", sessionExpired: "Сесія Google завершилась. Увійди знову, щоб зберегти зміни.",
@@ -47,6 +49,8 @@ export const STR = {
     today: "сьогодні", ago: "{n} дн. тому", readAgain: "Прочитати AI ще раз", medsNow: "Ліки зараз", visitsCount: "Візити"
   },
   pl: {
+    extraLangs: "Dodatkowe języki", extraHint: "Ukraiński i angielski są zawsze. Dodatkowy język pojawi się u góry obok nich.",
+    readAi: "Odczytaj przez AI", manualEntry: "Wpisz ręcznie", saveMore: "Zapisz i dodaj kolejny", manualHint: "Stare lub odręczne wyniki — «Wpisz ręcznie»: plik lub zdjęcie są opcjonalne, datę podajesz sam(a).", needFile: "Aby AI odczytało dokument, dodaj plik lub zdjęcie.", needTitle: "Dodaj plik albo nazwę dokumentu.",
     tagline: "Wszystko w jednym miejscu.",
     welcomeTitle: "Twoje dane medyczne — w jednym miejscu.",
     welcomeLead: "Badania, wizyty, leki i codzienne pomiary z różnych klinik. Wszystko zapisuje się tylko na Twoim Dysku Google.",
@@ -85,7 +89,7 @@ export const STR = {
     openGpt: "Otwórz GPT", paste: "Wklej tutaj odpowiedź ChatGPT", importBtn: "Rozpoznaj", badJson: "Nie udało się odczytać odpowiedzi. Skopiuj ją całą, razem z { }.",
     importGpt: "Import z ChatGPT", skipAi: "Tylko zapisz plik",
     settings: "Ustawienia", language: "Język", aiMode: "Kto czyta wyniki", backup: "Kopia zapasowa", exportBtn: "Pobierz kopię (.json)", importBackup: "Przywróć z kopii",
-    signOut: "Wyloguj", privacy: "Prywatność", privacyText: "Wszystkie dane są w folderze «health.» na Twoim Dysku Google. Aplikacja widzi tylko pliki, które sama utworzyła. Twórca nie ma dostępu do Twoich danych.",
+    signOut: "Wyloguj", privacy: "Prywatność", privacyText: "Wszystkie dane są w folderze «health. · Twoje imię» na Twoim Dysku Google. Aplikacja widzi tylko pliki, które sama utworzyła. Twórca nie ma dostępu do Twoich danych.",
     saved: "Zapisano na Dysku Google", savedLocal: "Zapisano w przeglądarce", saving: "Zapisuję…", syncError: "Nie udało się zapisać. Spróbuję ponownie.", offline: "Brak internetu — zapiszę później",
     footer: "Dane z dokumentów · bez automatycznych wniosków medycznych", added: "Dodano", deleted: "Usunięto", confirmDelete: "Na pewno usunąć?",
     reconnect: "Zaloguj ponownie", sessionExpired: "Sesja Google wygasła. Zaloguj się ponownie, aby zapisać zmiany.",
@@ -93,6 +97,8 @@ export const STR = {
     today: "dziś", ago: "{n} dni temu", readAgain: "Odczytaj ponownie przez AI", medsNow: "Leki teraz", visitsCount: "Wizyty"
   },
   en: {
+    extraLangs: "Extra languages", extraHint: "Ukrainian and English are always there. An extra language appears at the top next to them.",
+    readAi: "Read with AI", manualEntry: "Enter manually", saveMore: "Save and add another", manualHint: "Old or handwritten results — «Enter manually»: a file or photo is optional, you set the date.", needFile: "Add a file or photo for the AI to read.", needTitle: "Add a file or a document title.",
     tagline: "Everything in one place.",
     welcomeTitle: "Your medical data — in one place.",
     welcomeLead: "Lab results, visits, medicines and daily readings from different clinics. Everything is stored only on your Google Drive.",
@@ -131,7 +137,7 @@ export const STR = {
     openGpt: "Open GPT", paste: "Paste the ChatGPT answer here", importBtn: "Read it", badJson: "Couldn't read the answer. Copy all of it, including { }.",
     importGpt: "Import from ChatGPT", skipAi: "Just save the file",
     settings: "Settings", language: "Language", aiMode: "Who reads lab results", backup: "Backup", exportBtn: "Download a copy (.json)", importBackup: "Restore from a copy",
-    signOut: "Sign out", privacy: "Privacy", privacyText: "All data lives in the «health.» folder on your Google Drive. The app can only see files it created. The developer has no access to your data.",
+    signOut: "Sign out", privacy: "Privacy", privacyText: "All data lives in the «health. · your name» folder on your Google Drive. The app can only see files it created. The developer has no access to your data.",
     saved: "Saved to Google Drive", savedLocal: "Saved in this browser", saving: "Saving…", syncError: "Couldn't save. Will retry.", offline: "Offline — will save later",
     footer: "Data from documents · no automated medical conclusions", added: "Added", deleted: "Deleted", confirmDelete: "Delete this?",
     reconnect: "Sign in again", sessionExpired: "Your Google session ended. Sign in again to save changes.",

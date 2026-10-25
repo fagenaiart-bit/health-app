@@ -96,8 +96,8 @@ function langPills() {
   return `<div class="langs">${shownLangs().map(l => `<button class="lang ${lang() === l ? "on" : ""}" data-lang="${l}"><span class="flag ${l === "uk" ? "ua" : l}"></span>${l === "uk" ? "UA" : l.toUpperCase()}</button>`).join("")}</div>`;
 }
 function header() {
-  return `<header class="top"><a class="brand" href="#" data-tab="overview"><span class="brand-heart">${I.heart}</span><span class="brand-name">health<i>.</i></span></a>
-  <div class="top-right">${langPills()}<button class="icon-btn" data-act="settings" aria-label="${t("settings")}">${I.gear}</button></div></header>`;
+  return `<header class="top"><a class="brand" href="#" data-tab="overview"><img class="brand-logo" src="icons/logo-96.png" alt="" width="46" height="46"><span class="brand-name">health<i>.</i></span></a>
+  <div class="top-right">${langPills()}<button class="icon-btn" data-act="settings" aria-label="${t("settings")}">${store.user?.picture ? `<img class="avatar" src="${esc(store.user.picture)}" alt="" referrerpolicy="no-referrer">` : I.gear}</button></div></header>`;
 }
 function syncPill() {
   if (store.mode === "demo") return `<span class="pill"><span class="d"></span>${t("savedLocal")}</span>`;
@@ -213,7 +213,7 @@ function pageMeds() {
 // ——— вітання й перше налаштування ———
 function pageWelcome() {
   return `<div class="welcome"><div class="top" style="justify-content:flex-end">${langPills()}</div>
-  <div class="logo"><span class="brand-heart">${I.heart.replace(/22/g, "30")}</span><span class="brand-name">health<i>.</i></span></div>
+  <div class="logo"><img class="brand-logo big" src="icons/logo-120.png" alt="" width="72" height="72"><span class="brand-name">health<i>.</i></span></div>
   <h1>${t("welcomeTitle")}</h1><p class="lead">${t("welcomeLead")}</p>
   <ul class="ticks"><li>${t("w1")}</li><li>${t("w2")}</li><li>${t("w3")}</li><li>${t("w4")}</li></ul>
   <button class="gbtn" data-act="signin">${I.g} ${t("signIn")}</button>

@@ -10,7 +10,7 @@ export const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().t
 export const now = () => new Date().toISOString();
 
 export function emptyData() {
-  const d = { version: 1, profile: { name: "", lang: "", aiMode: "", consent: false, medsConfirmedAt: "", updatedAt: "" } };
+  const d = { version: 1, profile: { name: "", lang: "", extraLangs: [], aiMode: "", consent: false, medsConfirmedAt: "", updatedAt: "" } };
   COLLECTIONS.forEach(c => (d[c] = []));
   return d;
 }
@@ -128,7 +128,7 @@ export async function googleSignIn({ silent = false } = {}) {
 }
 export function googleSignOut() {
   if (store.token && window.google?.accounts?.oauth2) google.accounts.oauth2.revoke(store.token, () => {});
-  localStorage.removeItem("health.mode"); localStorage.removeItem("health.folder"); localStorage.removeItem("health.file");
+  ["health.mode", "health.folder", "health.file", "health.named"].forEach(k => localStorage.removeItem(k));
   store.token = null; store.user = null; store.mode = null;
 }
 
@@ -156,18 +156,26 @@ export const drive = {
     const r = await gfetch(`${API}?q=${encodeURIComponent(q)}&fields=files(id,name)&spaces=drive&pageSize=10`);
     return (await r.json()).files || [];
   },
+  // Папка на Drive людини: «health. · Ім'я». Шукаємо за міткою застосунку, а старі папки «health.» перейменовуємо.
+  folderName() { const n = store.user?.name || (store.user?.email || "").split("@")[0]; return n ? `${FOLDER} · ${n}` : FOLDER; },
   async folder() {
     if (store.folderId) return store.folderId;
     let id = localStorage.getItem("health.folder");
     if (!id) {
-      const f = await this.find(`name='${FOLDER}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+      const type = "mimeType='application/vnd.google-apps.folder' and trashed=false";
+      let f = await this.find(`appProperties has { key='healthApp' and value='1' } and ${type}`);
+      if (!f.length) f = await this.find(`name='${FOLDER}' and ${type}`);
       id = f[0]?.id;
       if (!id) {
         const r = await gfetch(API + "?fields=id", { method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: FOLDER, mimeType: "application/vnd.google-apps.folder", description: "health. — твої медичні дані" }) });
+          body: JSON.stringify({ name: this.folderName(), mimeType: "application/vnd.google-apps.folder", appProperties: { healthApp: "1" }, description: "health. — медичні дані / medical records · health.me20.studio" }) });
         id = (await r.json()).id;
       }
       localStorage.setItem("health.folder", id);
+    }
+    if (!localStorage.getItem("health.named")) { // один раз: додати ім'я в назву папки й мітку застосунку
+      await gfetch(`${API}/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: this.folderName(), appProperties: { healthApp: "1" } }) }).then(() => localStorage.setItem("health.named", "1")).catch(() => {});
     }
     return (store.folderId = id);
   },
