@@ -78,7 +78,7 @@ export const store = {
       this.writeCache(); localStorage.setItem("health.dirty", "");
       this.setStatus("saved");
     } catch (e) {
-      console.error(e);
+      console.error(e); store.lastError = String(e.message || e).slice(0, 400);
       localStorage.setItem("health.dirty", "1");
       this.setStatus(e.code === 401 ? "auth" : "error");
       if (e.code !== 401) { clearTimeout(this._t); this._t = setTimeout(() => this.push(), 15000); }

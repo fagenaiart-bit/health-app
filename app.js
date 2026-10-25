@@ -105,6 +105,7 @@ function syncPill() {
   if (s === "auth") return `<button class="pill error" data-act="reconnect"><span class="d"></span>${t("reconnect")}</button>`;
   const map = { saving: ["saving", t("saving")], error: ["error", t("syncError")], offline: ["saving", t("offline")] };
   const [cls, txt] = map[s] || ["", t("saved")];
+  if (s === "error") return `<button class="pill error" data-act="syncInfo"><span class="d"></span>${txt} ⓘ</button>`;
   return `<span class="pill ${cls}"><span class="d"></span>${txt}</span>`;
 }
 function nav() {
@@ -432,6 +433,7 @@ document.addEventListener("click", e => {
   switch (ds.act) {
     case "signin": return signIn();
     case "reconnect": return signIn();
+    case "syncInfo": sheet(t("syncError"), `<p class="small" style="word-break:break-word">${esc(store.lastError || "—")}</p><div class="btns"><button class="btn small" data-retry>${t("save")}</button></div>`, (el, close) => { el.querySelector("[data-retry]").onclick = () => { close(); store.push(); }; }); return;
     case "demo": localStorage.setItem("health.mode", "demo"); store.mode = "demo"; store.data = store.readCache() || demoData(lang()); store.writeCache(); render(); return;
     case "settings": return settings();
     case "addDoc": return addDoc();
